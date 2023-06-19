@@ -17,7 +17,3 @@ class Gender(db.Model):
     name = Column(Enum(GenderEnum), nullable=False)
     user = db.relationship('User', backref='gender', uselist=False)
     worker = db.relationship('Worker', backref='gender', uselist=False)
-
-
-
-

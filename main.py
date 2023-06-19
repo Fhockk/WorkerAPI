@@ -1,6 +1,8 @@
-from flask import Flask
+# from flask_script import Manager
 
-app = Flask(__name__)
+from app import app
+
+# manager = Manager(app)
 
 
 @app.route('/')

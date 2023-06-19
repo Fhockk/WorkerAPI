@@ -4,7 +4,10 @@ disable = missing-module-docstring,
           missing-class-docstring,
           too-few-public-methods,
           cyclic-import,
-          no-member
+          no-member,
+          fixme,
+          raise-missing-from,
+          super-with-arguments
 
 
 [FORMAT]

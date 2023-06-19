@@ -51,11 +51,11 @@ def update_schedule(schedule_id: str, data: dict):
             return 'Schedule not found'
 
         for key in data.keys():
-            if key == 'year' or key == 'month' or key == 'day':
+            if key in ('year', 'month', 'day'):
                 setattr(schedule, 'day', date(data['year'], data['month'], data['day']))
-            elif key == 'start_time_h' or key == 'start_time_m':
+            elif key in ('start_time_h', 'start_time_m'):
                 setattr(schedule, 'start_time', time(data['start_time_h'], data['start_time_m']))
-            elif key == 'end_time_h' or key == 'end_time_m':
+            elif key in ('end_time_h', 'end_time_m'):
                 setattr(schedule, 'end_time', time(data['end_time_h'], data['end_time_m']))
             elif key == 'worker_id':
                 setattr(schedule, 'worker_id', data['worker_id'])

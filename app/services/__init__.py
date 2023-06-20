@@ -1,7 +1,6 @@
 from app.services.user import (
     get_users,
     get_user,
-    create_user,
     update_user,
     delete_user
 )

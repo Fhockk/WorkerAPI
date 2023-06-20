@@ -21,7 +21,7 @@ def api_get_workers():
         result = get_workers_by_specialty.delay(specialty)
     else:
         result = get_workers.delay()
-    return jsonify(result.get())
+    return jsonify({'message': result.get()['message']}), result.get()['status']
 
 
 @worker_bp.route('/<id>/', methods=['GET'])
@@ -33,24 +33,24 @@ def api_get_worker(id):
         result = get_schedule_by_day.delay(id, year, month, day)
     else:
         result = get_worker.delay(id)
-    return jsonify(result.get())
+    return jsonify({'message': result.get()['message']}), result.get()['status']
 
 
 @worker_bp.route('/', methods=['POST'])
 def api_create_worker():
     data = request.json
     result = create_worker.delay(data)
-    return jsonify({'message': result.get()})
+    return jsonify({'message': result.get()['message']}), result.get()['status']
 
 
 @worker_bp.route('/<id>/', methods=['PATCH'])
 def api_update_worker(id):
     data = request.json
     result = update_worker.delay(id, data)
-    return jsonify({'message': result.get()})
+    return jsonify({'message': result.get()['message']}), result.get()['status']
 
 
 @worker_bp.route('/<id>/', methods=['DELETE'])
 def api_delete_worker(id):
     result = delete_worker.delay(id)
-    return jsonify({'message': result.get()})
+    return jsonify({'message': result.get()['message']}), result.get()['status']

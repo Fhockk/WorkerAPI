@@ -14,19 +14,34 @@ from .decorators import session_manager
 def get_appointment(appointment_id: str, session):
     query = session.query(Appointment).filter_by(id=int(appointment_id)).first()
     if query:
-        return AppointmentSchema().dump(query)
-    return 'Error. Appointment does not exist.'
+        return {'message': AppointmentSchema().dump(query), 'status': 200}
+    return {'message': 'Appointment does not exist', 'status': 400}
 
 
 @celery.task
 @session_manager
 def create_appointment(data: dict, session):
+    year = data.get('year')
+    month = data.get('month')
+    day = data.get('day')
+    start_time_h = data.get('start_time_h')
+    start_time_m = data.get('start_time_m')
+    end_time_h = data.get('end_time_h')
+    end_time_m = data.get('end_time_m')
+    worker_id = data.get('worker_id')
+    user_id = data.get('user_id')
+
+    # Проверяем, что все обязательные параметры были переданы
+    if any(x is None for x in
+           [year, month, day, start_time_h, start_time_m, end_time_h, end_time_m, worker_id, user_id]):
+        return {'message': 'Missing required parameters', 'status': 400}
+
     new_appointment = Appointment()
-    new_appointment.day = date(data['year'], data['month'], data['day'])
-    new_appointment.start_time = time(data['start_time_h'], data['start_time_m'])
-    new_appointment.end_time = time(data['end_time_h'], data['end_time_m'])
-    new_appointment.worker_id = data['worker_id']
-    new_appointment.user_id = data['user_id']
+    new_appointment.day = date(year, month, day)
+    new_appointment.start_time = time(start_time_h, start_time_m)
+    new_appointment.end_time = time(end_time_h, end_time_m)
+    new_appointment.worker_id = worker_id
+    new_appointment.user_id = user_id
 
     # Проверяем, есть ли уже записи, которые перекрываются с новой записью
     existing_appointments = session.query(Appointment).filter(
@@ -38,7 +53,7 @@ def create_appointment(data: dict, session):
     ).all()
 
     if existing_appointments:
-        return 'Conflict '
+        return {'message': 'Conflict with another appointment', 'status': 409}
 
     # Проверяем, что новая запись находится в границах рабочего времени доктора
     schedule = session.query(Schedule).filter(
@@ -47,14 +62,14 @@ def create_appointment(data: dict, session):
     ).first()
 
     if not schedule:
-        return 'No schedule'
+        return {'message': 'No schedule to this doctor at this date', 'status': 404}
 
     if new_appointment.start_time < schedule.start_time or new_appointment.end_time > schedule.end_time:
-        return 'Outside working hours'
+        return {'message': 'Outside working hours', 'status': 400}
 
     session.add(new_appointment)
     session.commit()
-    return 'Success'
+    return {'message': 'Success. Appointment created', 'status': 201}
 
 
 @celery.task
@@ -64,40 +79,52 @@ def update_appointment(appointment_id: str, data: dict, session):
     appointment = session.query(Appointment).get(int(appointment_id))
 
     if not appointment:
-        return 'Appointment not found'
+        return {'message': 'Appointment not found', 'status': 404}
+
+    year = data.get('year')
+    month = data.get('month')
+    day = data.get('day')
+    start_time_h = data.get('start_time_h')
+    start_time_m = data.get('start_time_m')
+    end_time_h = data.get('end_time_h')
+    end_time_m = data.get('end_time_m')
+
+    # Проверяем, что все обязательные параметры были переданы
+    if any(x is None for x in [year, month, day, start_time_h, start_time_m, end_time_h, end_time_m]):
+        return {'message': 'Missing required parameters', 'status': 400}
 
     # Проверяем, есть ли уже записи, которые перекрываются с обновленной записью
     existing_appointments = session.query(Appointment).filter(
         Appointment.worker_id == appointment.worker_id,
-        Appointment.day == date(data['year'], data['month'], data['day']),
-        Appointment.start_time < time(data['end_time_h'], data['end_time_m']),
-        Appointment.end_time > time(data['start_time_h'], data['start_time_m']),
-            or_(Appointment.status_id == 1, Appointment.status_id == 2)
+        Appointment.day == date(year, month, day),
+        Appointment.start_time < time(end_time_h, end_time_m),
+        Appointment.end_time > time(start_time_h, start_time_m),
+        or_(Appointment.status_id == 1, Appointment.status_id == 2)
     ).filter(Appointment.id != appointment_id).all()
 
     if existing_appointments:
-        return 'Conflict'
+        return {'message': 'Conflict with another appointment', 'status': 409}
 
     # Проверяем, что обновленная запись находится в границах рабочего времени доктора
     schedule = session.query(Schedule).filter(
         Schedule.worker_id == appointment.worker_id,
-        Schedule.day == date(data['year'], data['month'], data['day'])
+        Schedule.day == date(year, month, day)
     ).first()
 
     if not schedule:
-        return 'No schedule'
+        return {'message': 'No schedule to this doctor at this date', 'status': 404}
 
-    if time(data['start_time_h'], data['start_time_m']) < schedule.start_time or \
-            time(data['end_time_h'], data['end_time_m']) > schedule.end_time:
-        return 'Outside working hours'
+    if time(start_time_h, start_time_m) < schedule.start_time or \
+            time(end_time_h, end_time_m) > schedule.end_time:
+        return {'message': 'Outside working hours', 'status': 400}
 
     # Обновляем запись с новыми данными
-    appointment.day = date(data['year'], data['month'], data['day'])
-    appointment.start_time = time(data['start_time_h'], data['start_time_m'])
-    appointment.end_time = time(data['end_time_h'], data['end_time_m'])
+    appointment.day = date(year, month, day)
+    appointment.start_time = time(start_time_h, start_time_m)
+    appointment.end_time = time(end_time_h, end_time_m)
 
     session.commit()
-    return 'Success'
+    return {'message': 'Success. Appointment updated', 'status': 200}
 
 
 # Думаю о том, что лучше не добавлять удаление записи, а просто делать их неактивными,
@@ -109,5 +136,5 @@ def delete_appointment(appointment_id: str, session):
     if query:
         query.status_id = 3
         session.commit()
-        return 'Success'
-    return 'Error. Appointment does not exist'
+        return {'message': 'Success', 'status': 200}
+    return {'message': 'Appointment does not exist', 'status': 404}

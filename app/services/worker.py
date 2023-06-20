@@ -8,41 +8,58 @@ from .decorators import session_manager
 @celery.task
 @session_manager
 def get_workers(session):
-    workers = session.query(Worker).all()
-    workers_list = WorkerSchema(many=True).dump(workers)
-    return workers_list
+    query = session.query(Worker).all()
+    if query:
+        return {'message': WorkerSchema(many=True).dump(query), 'status': 200}
+    return {'message': 'Workers do not exist', 'status': 404}
 
 
 @celery.task
 @session_manager
 def get_workers_by_specialty(specialty, session):
-    workers = session.query(Worker).filter_by(specialty_id=int(specialty)).all()
-    if workers:
-        workers_list = WorkerSchema(many=True).dump(workers)
-        return workers_list
-    return 'No available doctors'
+    query = session.query(Worker).filter_by(specialty_id=int(specialty)).all()
+    if query:
+        return {'message': WorkerSchema(many=True).dump(query), 'status': 200}
+    return {'message': 'Workers do not exist with that specialty', 'status': 404}
 
 
 @celery.task
 @session_manager
 def get_worker(worker_id, session):
-    worker = session.query(Worker).filter_by(id=int(worker_id)).first()
-    if worker:
-        worker_list = WorkerSchema().dump(worker)
-        return worker_list
-    return 'Error. Worker does not exist.'
+    query = session.query(Worker).filter_by(id=int(worker_id)).first()
+    if query:
+        return {'message': WorkerSchema().dump(query), 'status': 200}
+    return {'message': 'Worker does not exist', 'status': 404}
 
 
 @celery.task
 @session_manager
 def create_worker(data: dict, session):
-    email_exist = session.query(Worker).filter_by(email=data.get('email')).first()
+    first_name = data.get('first_name')
+    last_name = data.get('last_name')
+    email = data.get('email')
+    gender_id = data.get('gender_id')
+    specialty_id = data.get('specialty_id')
+
+    if any(x is None for x in
+           [first_name, last_name, email, gender_id, specialty_id]):
+        return {'message': 'Missing required parameters', 'status': 400}
+
+    email_exist = session.query(Worker).filter_by(email=email).first()
     if email_exist:
-        return 'Error. Email already exist'
-    new_worker = Worker(**data)
+        return {'message': 'Conflict with another worker (email)', 'status': 409}
+
+    new_worker = Worker(
+        first_name=first_name,
+        last_name=last_name,
+        email=email,
+        gender_id=gender_id,
+        specialty_id=specialty_id
+    )
+
     session.add(new_worker)
     session.commit()
-    return 'Success'
+    return {'message': 'Success', 'status': 200}
 
 
 @celery.task
@@ -54,8 +71,8 @@ def update_worker(worker_id: str, data: dict, session):
             if field in data:
                 setattr(worker, field, data[field])
         session.commit()
-        return 'Success'
-    return 'Error. Worker does not exist'
+        return {'message': 'Success', 'status': 200}
+    return {'message': 'Worker does not exist', 'status': 404}
 
 
 @celery.task
@@ -65,5 +82,5 @@ def delete_worker(worker_id: str, session):
     if worker:
         session.delete(worker)
         session.commit()
-        return 'Success'
-    return 'Error. Worker does not exist'
+        return {'message': 'Success', 'status': 200}
+    return {'message': 'Worker does not exist', 'status': 404}

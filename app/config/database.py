@@ -9,4 +9,5 @@ db = SQLAlchemy()
 # Database migrations configuration
 migrate = Migrate()
 
+# Serializer
 ma = Marshmallow()

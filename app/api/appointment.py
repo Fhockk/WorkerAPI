@@ -14,20 +14,24 @@ appointment_bp = Blueprint('appointment', __name__, url_prefix='/api/v1/appointm
 @appointment_bp.route('/', methods=['POST'])
 def api_create_appointment():
     data = request.json
-    return jsonify(create_appointment(data))
+    result = create_appointment.delay(data)
+    return jsonify({'message': result.get()})
 
 
 @appointment_bp.route('/<id>/', methods=['GET'])
 def api_get_appointment(id):
-    return jsonify(get_appointment(id))
+    result = get_appointment.delay(id)
+    return jsonify(result.get())
 
 
 @appointment_bp.route('/<id>/', methods=['PATCH'])
 def api_update_appointment(id: str):
     data = request.json
-    return jsonify(update_appointment(id, data))
+    result = update_appointment.delay(id, data)
+    return jsonify({'message': result.get()})
 
 
 @appointment_bp.route('/<id>/', methods=['DELETE'])
 def api_delete_appointment(id):
-    return jsonify({'message': delete_appointment(id)})
+    result = delete_appointment.delay(id)
+    return jsonify({'message': result.get()})

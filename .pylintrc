@@ -9,7 +9,9 @@ disable = missing-module-docstring,
           raise-missing-from,
           super-with-arguments,
           invalid-name,
-          redefined-builtin
+          redefined-builtin,
+          redefined-outer-name,
+          import-outside-toplevel
 
 
 

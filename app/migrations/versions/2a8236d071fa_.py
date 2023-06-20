@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 633c58a0facc
+Revision ID: 2a8236d071fa
 Revises: 
-Create Date: 2023-06-19 15:52:01.700439
+Create Date: 2023-06-20 20:24:37.253515
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '633c58a0facc'
+revision = '2a8236d071fa'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -40,11 +40,13 @@ def upgrade():
     )
     op.create_table('user',
     sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('password_hash', sa.String(length=128), nullable=True),
+    sa.Column('email', sa.String(length=255), nullable=False),
+    sa.Column('address', sa.String(length=255), nullable=True),
     sa.Column('first_name', sa.String(length=35), nullable=False),
     sa.Column('last_name', sa.String(length=35), nullable=False),
-    sa.Column('email', sa.String(length=255), nullable=False),
-    sa.Column('password', sa.String(length=255), nullable=True),
-    sa.Column('address', sa.String(length=255), nullable=True),
+    sa.Column('is_admin', sa.Boolean(), nullable=True),
+    sa.Column('is_manager', sa.Boolean(), nullable=True),
     sa.Column('gender_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['gender_id'], ['gender.id'], ondelete='CASCADE'),
     sa.PrimaryKeyConstraint('id'),
@@ -55,7 +57,6 @@ def upgrade():
     sa.Column('first_name', sa.String(length=35), nullable=False),
     sa.Column('last_name', sa.String(length=35), nullable=False),
     sa.Column('email', sa.String(length=255), nullable=False),
-    sa.Column('password', sa.String(length=255), nullable=True),
     sa.Column('gender_id', sa.Integer(), nullable=False),
     sa.Column('specialty_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['gender_id'], ['gender.id'], ondelete='CASCADE'),

@@ -11,8 +11,8 @@ disable = missing-module-docstring,
           invalid-name,
           redefined-builtin,
           redefined-outer-name,
-          import-outside-toplevel
-
+          import-outside-toplevel,
+          duplicate-code
 
 
 [FORMAT]

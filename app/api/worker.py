@@ -9,6 +9,7 @@ from app.services import (
     update_worker,
     delete_worker
 )
+from .decorators import manager_required
 
 
 worker_bp = Blueprint('worker', __name__, url_prefix='/api/v1/workers')
@@ -37,6 +38,7 @@ def api_get_worker(id):
 
 
 @worker_bp.route('/', methods=['POST'])
+@manager_required
 def api_create_worker():
     data = request.json
     result = create_worker.delay(data)
@@ -44,6 +46,7 @@ def api_create_worker():
 
 
 @worker_bp.route('/<id>/', methods=['PATCH'])
+@manager_required
 def api_update_worker(id):
     data = request.json
     result = update_worker.delay(id, data)
@@ -51,6 +54,7 @@ def api_update_worker(id):
 
 
 @worker_bp.route('/<id>/', methods=['DELETE'])
+@manager_required
 def api_delete_worker(id):
     result = delete_worker.delay(id)
     return jsonify({'message': result.get()['message']}), result.get()['status']

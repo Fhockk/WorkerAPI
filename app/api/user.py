@@ -6,12 +6,14 @@ from app.services import (
     update_user,
     delete_user
 )
+from .decorators import manager_required
 
 
 user_bp = Blueprint('user', __name__, url_prefix='/api/v1/users')
 
 
 @user_bp.route('/', methods=['GET'])
+@manager_required
 def api_get_users():
     result = get_users.delay()
     return jsonify({'message': result.get()['message']}), result.get()['status']
@@ -31,6 +33,7 @@ def api_update_user(id):
 
 
 @user_bp.route('/<id>/', methods=['DELETE'])
+@manager_required
 def api_delete_user(id):
     result = delete_user.delay(id)
     return jsonify({'message': result.get()['message']}), result.get()['status']

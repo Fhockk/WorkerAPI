@@ -1,4 +1,6 @@
 import os
+from datetime import timedelta
+
 from flask import Flask
 
 from app.config.celery_instance import celery
@@ -13,6 +15,7 @@ def create_app():
     app.config['CELERY_BROKER_URL'] = 'amqp://guest:guest@localhost:5672/'
     app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6380/0'
     app.config['JWT_SECRET_KEY'] = 'youllneverdecode'
+    app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(minutes=30)
 
     db.init_app(app)
     MIGRATION_DIR = os.path.join('app', 'migrations')

@@ -8,7 +8,6 @@ from app.config.celery_instance import celery
 from .decorators import session_manager
 
 
-# TODO: add the search by the user and worker
 @celery.task
 @session_manager
 def get_appointment(appointment_id: str, session):
@@ -31,7 +30,6 @@ def create_appointment(data: dict, session):
     worker_id = data.get('worker_id')
     user_id = data.get('user_id')
 
-    # Проверяем, что все обязательные параметры были переданы
     if any(x is None for x in
            [year, month, day, start_time_h, start_time_m, end_time_h, end_time_m, worker_id, user_id]):
         return {'message': 'Missing required parameters', 'status': 400}
@@ -43,7 +41,6 @@ def create_appointment(data: dict, session):
     new_appointment.worker_id = worker_id
     new_appointment.user_id = user_id
 
-    # Проверяем, есть ли уже записи, которые перекрываются с новой записью
     existing_appointments = session.query(Appointment).filter(
         Appointment.worker_id == new_appointment.worker_id,
         Appointment.day == new_appointment.day,
@@ -55,7 +52,6 @@ def create_appointment(data: dict, session):
     if existing_appointments:
         return {'message': 'Conflict with another appointment', 'status': 409}
 
-    # Проверяем, что новая запись находится в границах рабочего времени доктора
     schedule = session.query(Schedule).filter(
         Schedule.worker_id == new_appointment.worker_id,
         Schedule.day == new_appointment.day
@@ -75,7 +71,6 @@ def create_appointment(data: dict, session):
 @celery.task
 @session_manager
 def update_appointment(appointment_id: str, data: dict, session):
-    # Находим существующую запись по appointment_id
     appointment = session.query(Appointment).get(int(appointment_id))
 
     if not appointment:
@@ -89,11 +84,9 @@ def update_appointment(appointment_id: str, data: dict, session):
     end_time_h = data.get('end_time_h')
     end_time_m = data.get('end_time_m')
 
-    # Проверяем, что все обязательные параметры были переданы
     if any(x is None for x in [year, month, day, start_time_h, start_time_m, end_time_h, end_time_m]):
         return {'message': 'Missing required parameters', 'status': 400}
 
-    # Проверяем, есть ли уже записи, которые перекрываются с обновленной записью
     existing_appointments = session.query(Appointment).filter(
         Appointment.worker_id == appointment.worker_id,
         Appointment.day == date(year, month, day),
@@ -105,7 +98,6 @@ def update_appointment(appointment_id: str, data: dict, session):
     if existing_appointments:
         return {'message': 'Conflict with another appointment', 'status': 409}
 
-    # Проверяем, что обновленная запись находится в границах рабочего времени доктора
     schedule = session.query(Schedule).filter(
         Schedule.worker_id == appointment.worker_id,
         Schedule.day == date(year, month, day)
@@ -118,7 +110,6 @@ def update_appointment(appointment_id: str, data: dict, session):
             time(end_time_h, end_time_m) > schedule.end_time:
         return {'message': 'Outside working hours', 'status': 400}
 
-    # Обновляем запись с новыми данными
     appointment.day = date(year, month, day)
     appointment.start_time = time(start_time_h, start_time_m)
     appointment.end_time = time(end_time_h, end_time_m)

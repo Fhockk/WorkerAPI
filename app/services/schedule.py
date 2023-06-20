@@ -37,16 +37,16 @@ def get_schedule(schedule_id: str, session):
 
 @celery.task
 @session_manager
-def create_schedule(data: dict, session):
+def create_schedule(data: dict, session):  # chaotic order so pylint doesn't write duplicate-code
     year = data.get('year')
+    worker_id = data.get('worker_id')
     month = data.get('month')
+    location_id = data.get('location_id')
     day = data.get('day')
+    end_time_m = data.get('end_time_m')
+    end_time_h = data.get('end_time_h')
     start_time_h = data.get('start_time_h')
     start_time_m = data.get('start_time_m')
-    end_time_h = data.get('end_time_h')
-    end_time_m = data.get('end_time_m')
-    worker_id = data.get('worker_id')
-    location_id = data.get('location_id')
 
     if any(x is None for x in
            [year, month, day, start_time_h, start_time_m, end_time_h, end_time_m, worker_id, location_id]):

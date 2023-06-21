@@ -1,0 +1,19 @@
+[MESSAGES CONTROL]
+disable = missing-module-docstring,
+          missing-function-docstring,
+          missing-class-docstring,
+          too-few-public-methods,
+          cyclic-import,
+          no-member,
+          fixme,
+          raise-missing-from,
+          super-with-arguments,
+          invalid-name,
+          redefined-builtin,
+          redefined-outer-name,
+          import-outside-toplevel,
+          duplicate-code
+
+
+[FORMAT]
+max-line-length = 120

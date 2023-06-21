@@ -3,16 +3,15 @@ disable = missing-module-docstring,
           missing-function-docstring,
           missing-class-docstring,
           too-few-public-methods,
-          cyclic-import,
           no-member,
-          fixme,
-          raise-missing-from,
           super-with-arguments,
-          invalid-name,
-          redefined-builtin,
+          duplicate-code,
           redefined-outer-name,
           import-outside-toplevel,
-          duplicate-code
+          invalid-name,
+          redefined-builtin,
+          raise-missing-from,
+          cyclic-import
 
 
 [FORMAT]

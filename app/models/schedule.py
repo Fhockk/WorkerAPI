@@ -15,3 +15,20 @@ class Schedule(db.Model):
     location_id = Column(Integer, ForeignKey('location.id', ondelete='CASCADE'), nullable=False)
 
     __table_args__ = (UniqueConstraint('day', 'worker_id'),)
+
+    def get_duration_minutes(self):
+        """
+        Calculates and returns the duration of the schedule in minutes.
+        """
+        start = self.start_time
+        end = self.end_time
+        duration = (end.hour * 60 + end.minute) - (start.hour * 60 + start.minute)
+        return duration
+
+    @classmethod
+    def get_schedules_by_worker(cls, worker_id):
+        """
+        Retrieves all schedules associated with a specific worker ID.
+        """
+        schedules = cls.query.filter_by(worker_id=worker_id).all()
+        return schedules

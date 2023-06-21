@@ -4,11 +4,13 @@ python:
  - "3.9"
 
 services:
-  - sqlite
+  - postgresql
+
+before_script:
+  - psql -c 'create database meduzzen;' -U postgres
 
 install:
  - pip install -r requirements.txt
 
 script:
  - python -m pylint app
- - flask db upgrade

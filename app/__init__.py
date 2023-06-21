@@ -2,19 +2,23 @@ import os
 from datetime import timedelta
 
 from flask import Flask
+from dotenv import load_dotenv
 
 from app.config.celery_instance import celery
 from app.config.database import db, migrate, ma, jwt
 from app import models
 
 
+load_dotenv()
+
+
 def create_app():
     app = Flask(__name__)
-    app.config['SECRET_KEY'] = 'neverdecode'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///mydatabase.db'
-    app.config['CELERY_BROKER_URL'] = 'amqp://guest:guest@localhost:5672/'
-    app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6380/0'
-    app.config['JWT_SECRET_KEY'] = 'youllneverdecode'
+    app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SQLALCHEMY_DATABASE_URI')
+    app.config['CELERY_BROKER_URL'] = os.environ.get('CELERY_BROKER_URL')
+    app.config['CELERY_RESULT_BACKEND'] = os.environ.get('CELERY_RESULT_BACKEND')
+    app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY')
     app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(minutes=30)
 
     db.init_app(app)

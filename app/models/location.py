@@ -16,3 +16,19 @@ class Location(db.Model):
     id = Column(Integer, primary_key=True)
     place = Column(Enum(LocationEnum), nullable=False)
     schedule = db.relationship('Schedule', backref='location')
+
+    @classmethod
+    def get_all_locations(cls):
+        """
+        Returns a list of all available locations.
+        """
+        locations = cls.query.all()
+        return locations
+
+    @classmethod
+    def get_location_by_place(cls, place):
+        """
+        Returns the location object with the specified place.
+        """
+        location = cls.query.filter_by(place=place).first()
+        return location

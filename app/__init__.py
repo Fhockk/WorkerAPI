@@ -18,8 +18,8 @@ def create_app():
     app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(minutes=30)
 
     db.init_app(app)
-    MIGRATION_DIR = os.path.join('app', 'migrations')
-    migrate.init_app(app, db, directory=MIGRATION_DIR)
+    migration_dir = os.path.join('app', 'migrations')
+    migrate.init_app(app, db, directory=migration_dir)
     ma.init_app(app)
     jwt.init_app(app)
 

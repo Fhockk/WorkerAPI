@@ -14,3 +14,17 @@ class Worker(db.Model):
     specialty_id = Column(Integer, ForeignKey('specialty.id', ondelete='CASCADE'), nullable=False)
     schedule = db.relationship('Schedule', backref='worker')
     appointment = db.relationship('Appointment', backref='worker')
+
+    def get_full_name(self):
+        """
+        Returns the full name of the worker.
+        """
+        full_name = f"{self.first_name} {self.last_name}"
+        return full_name
+
+    def get_worker_by_email(self, email):
+        """
+        Returns the worker object with the specified email.
+        """
+        worker = Worker.query.filter_by(email=email).first()
+        return worker

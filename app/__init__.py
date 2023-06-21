@@ -19,8 +19,7 @@ def create_app():
     POSTGRES_PASSWORD = os.environ.get('POSTGRES_PASSWORD')
     POSTGRES_DB = os.environ.get('POSTGRES_DB')
     POSTGRES_HOST = os.environ.get('POSTGRES_HOST')
-    POSTGRES_PORT = os.environ.get('POSTGRES_PORT')
-    database_uri = f'postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{POSTGRES_HOST}:5432/{POSTGRES_DB}'
+    database_uri = f'postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@db:5432/{POSTGRES_DB}'
     app.config['SQLALCHEMY_DATABASE_URI'] = database_uri
     app.config['CELERY_BROKER_URL'] = os.environ.get('CELERY_BROKER_URL')
     app.config['CELERY_RESULT_BACKEND'] = os.environ.get('CELERY_RESULT_BACKEND')

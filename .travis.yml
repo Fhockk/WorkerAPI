@@ -14,5 +14,3 @@ install:
 
 script:
  - python -m pylint app
- - flask db migrate
- - flask db upgrade
